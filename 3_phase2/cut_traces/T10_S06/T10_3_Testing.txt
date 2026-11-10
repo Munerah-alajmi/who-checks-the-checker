@@ -1,0 +1,94 @@
+File T10
+Task: Develop a CLI typing speed tester. Presents a random paragraph of text, and the user types it. Calculates words per minute (WPM) and accuracy.
+The log ends at this point. Please review what is in front of you.
+================================================================================
+
+=== Test write to log file ===
+=== MetaGPT Agent Communication Log - Started at 2025-05-13 09:39:10 ===
+
+[2025-05-13 09:39:10] FROM: Human TO: {'<all>'}
+ACTION: metagpt.actions.add_requirement.UserRequirement
+CONTENT:
+Develop a CLI typing speed tester. Presents a random paragraph of text, and the user types it. Calculates words per minute (WPM) and accuracy.
+--------------------------------------------------------------------------------
+
+[2025-05-13 09:39:24] NEW MESSAGES:
+
+SimpleCoder: 
+import random
+import time
+
+def typing_speed_tester():
+    paragraphs = [
+        "The quick brown fox jumps over the lazy dog.",
+        "All human beings are born free and equal in dignity and rights.",
+        "Life is what happens when you're busy making other plans.",
+        "The greatest glory in living lies not in never falling, but in rising every time we fall.",
+        "The way to get started is to quit talking and begin doing.",
+        "Your time is limited, don't waste it living someone else's life."
+    ]
+
+    selected_paragraph = random.choice(paragraphs)
+    print("Type the following paragraph as fast as you can:")
+    print(selected_paragraph)
+    input("Press enter to start...")
+
+    start_time = time.time()
+    typed_input = input()
+    end_time = time.time()
+
+    elapsed_time = end_time - start_time
+    words = selected_paragraph.split()
+    typed_words = typed_input.split()
+    num_of_words = len(words)
+    typed_num_of_words = len(typed_words)
+
+    # Calculate accuracy
+    correct_words = 0
+    for i in range(min(num_of_words, typed_num_of_words)):
+        if words[i] == typed_words[i]:
+            correct_words += 1
+    accuracy = (correct_words / num_of_words) * 100
+
+    # Calculate words per minute (WPM)
+    wpm = (typed_num_of_words / elapsed_time) * 60
+
+    print(f"Time: {elapsed_time:.2f} seconds")
+    print(f"Words per minute: {wpm:.2f} WPM")
+    print(f"Accuracy: {accuracy:.2f}%")
+
+--------------------------------------------------------------------------------
+
+[2025-05-13 09:39:38] NEW MESSAGES:
+
+SimpleTester: 
+import pytest
+from typing_speed_tester import typing_speed_tester
+
+def test_typing_speed_tester(monkeypatch):
+    # Mock inputs and time.sleep to simulate user typing
+    monkeypatch.setattr('builtins.input', lambda _: "The quick brown fox jumps over the lazy dog.")
+    monkeypatch.setattr('time.time', lambda: 1000000.0, 1000060.0)
+    assert typing_speed_tester() == (10.0, 100.0)  # Assuming the function returns WPM and accuracy
+
+def test_typing_speed_tester_incorrect(monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda _: "The quick brown dog.")
+    monkeypatch.setattr('time.time', lambda: 1000000.0, 1000060.0)
+    assert typing_speed_tester() == (3.0, 50.0)  # Assuming half the words are correct and half the length
+
+def test_typing_speed_tester_empty_input(monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda _: "")
+    monkeypatch.setattr('time.time', lambda: 1000000.0, 1000060.0)
+    assert typing_speed_tester() == (0.0, 0.0)  # No words typed, so 0 WPM and 0% accuracy
+
+def test_typing_speed_tester_partial_correct(monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda _: "The quick brown fox jumps.")
+    monkeypatch.setattr('time.time', lambda: 1000000.0, 1000060.0)
+    assert typing_speed_tester() == (5.0, 83.33)  # Assuming 5 out of 6 words are correct
+
+def test_typing_speed_tester_extra_words(monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda _: "The quick brown fox jumps over the lazy dog extra words.")
+    monkeypatch.setattr('time.time', lambda: 1000000.0, 1000060.0)
+    assert typing_speed_tester() == (11.0, 100.0)  # Extra words should not affect accuracy but increase WPM
+
+=== END OF FILE (checkpoint) ===

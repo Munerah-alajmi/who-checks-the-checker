@@ -1,0 +1,95 @@
+File T05
+Task: Build a CLI utility that provides a simplified interface to add basic firewall rules using `iptables` (Linux). For example, allow or block a specific port. Requires sudo privileges.
+The log ends at this point. Please review what is in front of you.
+================================================================================
+
+=== Test write to log file ===
+=== MetaGPT Agent Communication Log - Started at 2025-05-13 08:59:45 ===
+
+[2025-05-13 08:59:45] FROM: Human TO: {'<all>'}
+ACTION: metagpt.actions.add_requirement.UserRequirement
+CONTENT:
+Build a CLI utility that provides a simplified interface to add basic firewall rules using `iptables` (Linux). For example, allow or block a specific port. Requires sudo privileges.
+--------------------------------------------------------------------------------
+
+[2025-05-13 08:59:57] NEW MESSAGES:
+
+SimpleCoder: 
+import subprocess
+import sys
+
+def execute_iptables_rule(rule):
+    try:
+        subprocess.run(['sudo', 'iptables'] + rule.split(), check=True)
+        print("Rule applied successfully.")
+    except subprocess.CalledProcessError:
+        print("Failed to apply rule. Ensure you have sudo privileges and the rule is correct.")
+
+def add_firewall_rule(action, protocol, port, direction="INPUT"):
+    if action.lower() not in ['allow', 'block']:
+        print("Invalid action. Use 'allow' or 'block'.")
+        return
+    if protocol.lower() not in ['tcp', 'udp']:
+        print("Invalid protocol. Use 'tcp' or 'udp'.")
+        return
+    if not port.isdigit() or int(port) < 1 or int(port) > 65535:
+        print("Invalid port. Use a value between 1 and 65535.")
+        return
+    if direction.upper() not in ['INPUT', 'OUTPUT']:
+        print("Invalid direction. Use 'INPUT' for incoming or 'OUTPUT' for outgoing rules.")
+        return
+    
+    rule_action = '-A' if action.lower() == 'allow' else '-I'
+    rule_target = 'ACCEPT' if action.lower() == 'allow' else 'DROP'
+    rule = f"{rule_action} {direction} -p {protocol.lower()} --dport {port} -j {rule_target}"
+    
+    execute_iptables_rule(rule)
+
+if __name__ == "__main__":
+    if len(sys.argv) != 5:
+        print("Usage: python script.py <action> <protocol> <port> <direction>")
+        sys.exit(1)
+    
+    action, protocol, port, direction = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+    add_firewall_rule(action, protocol, port, direction)
+
+--------------------------------------------------------------------------------
+
+[2025-05-13 09:00:08] NEW MESSAGES:
+
+SimpleTester: 
+import pytest
+from unittest.mock import patch
+
+# Assuming the script is named firewall_utility.py and the function is imported accordingly
+from firewall_utility import add_firewall_rule
+
+@patch('firewall_utility.execute_iptables_rule')
+def test_allow_tcp_port(mock_execute):
+    add_firewall_rule("allow", "tcp", "80", "INPUT")
+    mock_execute.assert_called_with("-A INPUT -p tcp --dport 80 -j ACCEPT")
+
+@patch('firewall_utility.execute_iptables_rule')
+def test_block_udp_port(mock_execute):
+    add_firewall_rule("block", "udp", "53", "OUTPUT")
+    mock_execute.assert_called_with("-I OUTPUT -p udp --dport 53 -j DROP")
+
+@patch('firewall_utility.execute_iptables_rule')
+def test_invalid_action(mock_execute):
+    with pytest.raises(SystemExit):
+        add_firewall_rule("deny", "tcp", "22", "INPUT")
+    mock_execute.assert_not_called()
+
+@patch('firewall_utility.execute_iptables_rule')
+def test_invalid_protocol(mock_execute):
+    with pytest.raises(SystemExit):
+        add_firewall_rule("allow", "icmp", "8", "INPUT")
+    mock_execute.assert_not_called()
+
+@patch('firewall_utility.execute_iptables_rule')
+def test_invalid_port_range(mock_execute):
+    with pytest.raises(SystemExit):
+        add_firewall_rule("allow", "tcp", "65536", "INPUT")
+    mock_execute.assert_not_called()
+
+=== END OF FILE (checkpoint) ===
