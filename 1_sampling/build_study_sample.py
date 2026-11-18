@@ -93,31 +93,9 @@ cols = ["Sample ID", "Role", "System", "LLM", "Benchmark", "trace.key", "trace.i
 widths = [10, 9, 10, 11, 14, 30, 11, 70, 26, 13, 40]
 
 wb = Workbook()
-ws = wb.active; ws.title = "Read Me"; ws.column_dimensions["A"].width = 120
+wb.remove(wb.active)
 main = [r for r in out_rows if r[1] == "Main"]; res = [r for r in out_rows if r[1] == "Reserve"]
 mw = sum(r[9] for r in main if r[2] == "MetaGPT"); cw = sum(r[9] for r in main if r[2] == "ChatDev")
-lines = [
- ("Study sample - CpE-508 group paper (AGENT 2027)", T), ("", B),
- ("What this is", BB),
- (f"The traces to annotate in the main study: {len(main)} Main traces ({sum(r[2]=='MetaGPT' for r in main)} MetaGPT + {sum(r[2]=='ChatDev' for r in main)} ChatDev) and {len(res)} Reserve traces.", B),
- ("Drawn from the 371 coding traces that MAST-Data's LLM judge labelled 3.3 Incorrect Verification (MAD_full_dataset.json, Hugging Face mcemri/MAD).", B),
- ("", B), ("How it was drawn (write this in the Methodology)", BB),
- (f"- Stratified random sample by system x LLM, random seed {SEED}. Script: build_study_sample.py (same folder).", B),
- ("- The 7 pilot traces (P01-P07) were excluded.", B),
- ("- No task appears twice in the sample or overlaps a pilot task, so each trace is a different program.", B),
- ("- MetaGPT: 8 GPT-4o + 8 Claude (ProgramDev), 7 Qwen + 7 CodeLlama (ProgramDev-v2). ChatDev: 4 GPT-4o (ProgramDev), 3 Qwen + 3 CodeLlama (ProgramDev-v2).", B),
- ("- HyperAgent and OpenManus are not included (the plan covers MetaGPT and ChatDev only).", B),
- ("", B), ("How to use it", BB),
- ("- Annotate the Main traces. If a trace cannot be used (e.g., unreadable), replace it with the first unused Reserve trace from the same system and LLM, and log why.", B),
- ("- If the pilot shows you need a smaller sample, drop Main traces from the bottom of each stratum, not by choosing ones you like.", B),
- ("- Trace texts are in study_traces.zip, one .txt per trace, same header format as the pilot traces.", B),
- ("", B), ("Workload warning", BB),
- (f"- Main MetaGPT traces total {mw:,} words; Main ChatDev traces total {cw:,} words. ChatDev Qwen/CodeLlama traces are very long (60k-120k words each).", B),
- ("- Decide after the pilot whether ChatDev Qwen/CodeLlama is feasible; if not, use ChatDev GPT-4o only and state it as a limitation.", B),
- ("", B), ("Labels in this file come from the dataset's LLM judge, not from humans. Annotation must be done by the authors.", B),
-]
-for i, (txt, f) in enumerate(lines, 1):
-    c = ws.cell(i, 1, txt); c.font = f; c.alignment = Alignment(wrap_text=True)
 
 for title, data in (("Sample", main), ("Reserve", res)):
     s = wb.create_sheet(title)
